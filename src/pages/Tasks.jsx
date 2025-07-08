@@ -1,47 +1,111 @@
 import React from 'react'
 import TaskList from '../components/TaskList'
-import { useState } from "react";
+import { useReducer } from "react";
 import AddTaskForm from '../components/AddTaskForm';
 import SearchBar from '../components/SearchBar';
 
+const ACTIONS = {
+  ADD_TASK: 'ADD_TASK',
+  DELETE_TASK: 'DELETE_TASK',
+  EDIT_TASK: 'EDIT_TASK',
+  TOGGLE_TASK: 'TOGGLE_TASK',
+  SET_SEARCH_QUERY: 'SET_SEARCH_QUERY',
+  CLEAR_SEARCH: 'CLEAR_SEARCH'
+}
+
+const initialState = {
+  tasks:[],
+  searchQuery: '',
+  isSearching:false
+}
+
+function tasksReducer(state, action) {
+  switch (action.type) {
+    case ACTIONS.ADD_TASK:
+      return{
+        ...state,
+        tasks:[action.payload, ...state.tasks]
+      }
+    case ACTIONS.DELETE_TASK:
+      return{
+        ...state,
+        tasks:state.tasks.filter(task => task.id !== action.payload)
+      }
+    case ACTIONS.EDIT_TASK:
+      return{
+        ...state,
+        tasks:state.tasks.map(task => 
+          task.id === action.payload.taskId
+            ? { ...task, ...action.payload.updatedTask, updatedAt: Date.now() }
+            : task
+       )
+      }
+    case ACTIONS.TOGGLE_TASK:
+      return{
+        ...state,
+        tasks:state.tasks.map(task => 
+          task.id === action.payload
+            ? { ...task, completed: !task.completed, updatedAt: Date.now() }
+            : task)
+      }
+    case ACTIONS.SET_SEARCH_QUERY:
+      if (action.payload) {
+        return { 
+          ...state,
+          searchQuery: action.payload,
+          isSearching: true
+        }
+      }
+      else{
+        return {
+          ...state, 
+          searchQuery: '',
+          isSearching: false
+        }
+      }
+  
+    default:
+      return state;
+  }
+}
+
 export default function Tasks() {
 
-  const [tasks, setTasks] = useState([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [filteredTasks, setFilteredTasks]= useState([])
+  const [state, dispatch] = useReducer(tasksReducer, initialState)
+  const filteredTasks = state.isSearching 
+  ? state.tasks.filter(task => task.title.toLowerCase().includes(state.searchQuery.toLowerCase()))
+  : state.tasks
+  
+  console.log(state);
+
+  const handleAddTask = (newTask) => {
+    dispatch({type:ACTIONS.ADD_TASK, payload:newTask})
+  }
 
   const handleDelete = (taskId, taskTitle) => {
-    if (window.confirm(`确定删除任务"${taskTitle}"吗？`)) {
-      const newTasks = tasks.filter(task => task.id !== taskId)
-      setTasks(newTasks)
+    if (window.confirm(`确定删除任务${taskTitle}吗？`)) {
+      dispatch({type:ACTIONS.DELETE_TASK, payload:taskId})
     }
   }
 
   const handleToggle = (taskId) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId 
-        ? { ...task, completed: !task.completed, updatedAt: Date.now() }
-        : task
-    ))
+    dispatch({type:ACTIONS.TOGGLE_TASK, payload:taskId})
   }
 
   const handleEdit = (taskId, updatedTask) => {
-    setTasks(prev => prev.map(task => 
-      task.id === taskId 
-        ? { ...task, ...updatedTask, updatedAt: Date.now() }
-        : task
-    ))
+    dispatch({type:ACTIONS.EDIT_TASK, payload:{taskId:taskId, updatedTask:updatedTask}})
   }
 
-  const handleSearch = (tasks) => {
-    setIsSearching(true)
+  const handleSearch = (searchQuery) => {
+    dispatch({type:ACTIONS.SET_SEARCH_QUERY, payload:searchQuery})
   }
+
 
   return (
     <>
       <div><SearchBar onSearch={handleSearch}/></div>
-      <div><AddTaskForm setTasks={setTasks} /></div>
-      <div><TaskList tasks={isSearching?filteredTasks:tasks} onDelete={handleDelete} onToggle={handleToggle} onEdit={handleEdit}/></div> 
+      <div><AddTaskForm onAddTasks={handleAddTask}/></div>
+      <div><TaskList tasks={state.isSearching?filteredTasks:state.tasks} onDelete={handleDelete} onToggle={handleToggle} onEdit={handleEdit}/></div> 
     </>
   )
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from "react";
 
-export default function AddTaskForm({setTasks}) {
+export default function AddTaskForm({onAddTasks}) {
 
 const [formData, setFormData] = useState({
 title:'',
@@ -51,7 +51,8 @@ const handleSubmit = (e) =>{
             completed:false,
             dueAt: formData.dueAt ? new Date(formData.dueAt).getTime() : null
         }
-        setTasks((prev) => ([newTask,...prev]))    
+        // setTasks((prev) => ([newTask,...prev]))    
+        onAddTasks(newTask)
         setErrors({});
         setFormData({
             title:'',
