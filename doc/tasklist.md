@@ -23,30 +23,30 @@
 14. 使用 useState + useEffect 完成 25-5 计时基础逻辑
 15. 实现"开始 / 暂停 / 重置"按钮与逻辑
 16. 添加计时结束弹窗或声音提醒（可直接 alert）
-17. 抽离定时器副作用与清理函数，确保组件卸载不泄漏
-18. 将专注 / 休息时长参数化（读取设置页数据）
+17. 将专注 / 休息时长参数化（读取设置页数据）
 
 ## 设置页 & 全局状态
-19. 创建设置表单：专注时长、休息时长输入
-20. 实现浅 / 深色主题切换（使用 Context 提供 theme）
-21. 编写 SettingsContext：集中存储番茄钟时长与主题
-22. 使番茄钟模块读取 SettingsContext 的时长配置
+18. 创建设置表单：专注时长、休息时长输入
+19. 实现浅 / 深色主题切换（使用 Context 提供 theme）
+20. 编写 SettingsContext：集中存储番茄钟时长与主题
+21. 使番茄钟模块读取 SettingsContext 的时长配置
 
 ## 本地持久化
-23. 将任务列表写入 localStorage（useEffect 监听任务 state）
-24. 启动时从 localStorage 读取任务列表初始化 state
-25. 将设置数据持久化到 localStorage（含初次默认值）
-26. 补充异常处理：localStorage 读写失败回退逻辑
+22. 将任务列表写入 localStorage（useEffect 监听任务 state）
+23. 启动时从 localStorage 读取任务列表初始化 state
+24. 将设置数据持久化到 localStorage（含初次默认值）
+25. 补充异常处理：localStorage 读写失败回退逻辑
 
 ## UI 与体验优化
-27. 使用 Tailwind 调整整体配色与排版（简洁美观）
-28. 为主要按钮与输入框添加可访问性属性（aria-label）
-29. 添加加载 / 空数据 / 错误状态的友好提示
+26. 使用 Tailwind 调整整体配色与排版（简洁美观）
+27. 为主要按钮与输入框添加可访问性属性（aria-label）
+28. 添加加载 / 空数据 / 错误状态的友好提示
 
 ## 测试与验证
-30. 手工执行功能验收测试，用任务清单逐项核对
-31. （可选）引入 React Testing Library，为 reducer 和番茄钟逻辑写基础测试
+29. 手工执行功能验收测试，用任务清单逐项核对
+30. （可选）引入 React Testing Library，为 reducer 和番茄钟逻辑写基础测试
 
 ## 收尾
-32. 更新 README：项目启动步骤、功能截图、学习收获
-33. 创建最终 Git tag / release，准备分享或复盘 
+31. 更新 README：项目启动步骤、功能截图、学习收获
+32. 创建最终 Git tag / release，准备分享或复盘
+33. 抽离定时器副作用与清理函数，确保组件卸载不泄漏（自定义 Hook + useRef） 

@@ -1,14 +1,5 @@
-import React, { useEffect, useReducer } from 'react'
-
-const initialState = {
-  // 'IDLE' | 'WORKING' | 'BREAK' | 'PAUSED'
-  status: 'IDLE',
-  previousStatus: '',
-  timeLeft: 0,
-  isActive:false,
-  currentSession:0,
-  totalSessions:0
-}
+import React, { useEffect, useReducer, useContext } from 'react'
+import { SettingsContext } from '../contexts/SettingsContext'
 
 const ACTIONS = {
   START_WORK: 'START_WORK',
@@ -20,47 +11,6 @@ const ACTIONS = {
   COMPLETE_SESSION: 'COMPLETE_SESSION'
 }
 
-const workingTime = 15
-const breakTime = 5
-
-function timerReducer(state, action) {
-  switch (action.type) {
-    case ACTIONS.START_WORK:
-      return {...state, status:'WORKING', isActive:true, timeLeft: workingTime}
-    case ACTIONS.START_BREAK:
-      return{...state, status:'BREAK', isActive:true, timeLeft: breakTime}
-    case ACTIONS.PAUSE:
-      return{...state, status:'PAUSED', isActive:false, previousStatus:state.status}
-    case ACTIONS.RESUME:
-      return{...state, status:state.previousStatus, isActive:true}
-    case ACTIONS.RESET:
-      return initialState
-    case ACTIONS.TICK:
-      if (state.timeLeft <= 1) {
-        const newState = {
-          ...state,
-          timeLeft: 0,
-          isActive: false
-        }       // 如果是工作阶段完成，增加会话数
-        if (state.status === 'WORKING') {
-          alert('工作时间结束！休息一下吧')
-          newState.currentSession = state.currentSession + 1
-          newState.totalSessions = state.totalSessions + 1
-          newState.status = 'IDLE'  // 工作完成回到空闲
-          newState.previousStatus = 'WORKING'
-        } else if (state.status === 'BREAK') {
-          newState.previousStatus = 'BREAK'
-          newState.status = 'IDLE'  // 休息完成回到空闲
-        }   
-        return newState
-      }
-      return{...state, timeLeft:state.timeLeft - 1}
-    case ACTIONS.COMPLETE_SESSION:
-      return{...state, totalSessions: state.totalSessions + 1}
-    default:
-      return state;
-  }
-}
 
 const getButtonStates = (status, previousStatus) => {
   if (status === 'IDLE' && (previousStatus === '' || previousStatus === 'BREAK' )) {
@@ -122,11 +72,83 @@ const formatTime = (seconds) => {
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
+function timerReducer(state, action) {
+  switch (action.type) {
+    case ACTIONS.START_WORK:
+      return {...state, status:'WORKING', isActive:true, timeLeft: state.workDuration}
+    case ACTIONS.START_BREAK:
+      return{...state, status:'BREAK', isActive:true, timeLeft: state.breakDuration}
+    case ACTIONS.PAUSE:
+      return{...state, status:'PAUSED', isActive:false, previousStatus:state.status}
+    case ACTIONS.RESUME:
+      return{...state, status:state.previousStatus, isActive:true}
+    case ACTIONS.RESET:
+      return {
+        status: 'IDLE',
+        previousStatus: '',
+        timeLeft: 0,
+        isActive: false,
+        currentSession: 0,
+        totalSessions: 0,
+        workDuration: state.workDuration,  // 使用当前state中的值
+        breakDuration: state.breakDuration  // 使用当前state中的值
+      }
+    case ACTIONS.TICK:
+      if (state.timeLeft <= 1) {
+        const newState = {
+          ...state,
+          timeLeft: 0,
+          isActive: false
+        }       // 如果是工作阶段完成，增加会话数
+        if (state.status === 'WORKING') {
+          alert(`工作时间结束！休息一下吧！现在已完成${state.currentSession + 1}个番茄钟！`)
+          newState.currentSession = state.currentSession + 1
+          newState.totalSessions = state.totalSessions + 1
+          newState.status = 'IDLE'  // 工作完成回到空闲
+          newState.previousStatus = 'WORKING'
+        } else if (state.status === 'BREAK') {
+          alert('休息时间结束！让我们开始工作吧')
+          newState.previousStatus = 'BREAK'
+          newState.status = 'IDLE'  // 休息完成回到空闲
+        }   
+        return newState
+      }
+      return{...state, timeLeft:state.timeLeft - 1}
+    case ACTIONS.COMPLETE_SESSION:
+      return{...state, totalSessions: state.totalSessions + 1}
+          case ACTIONS.UPDATE_DURATIONS: {
+        const newState = {
+          ...state,
+          workDuration: action.payload.workDuration,
+          breakDuration: action.payload.breakDuration
+        };
+        return newState;
+      }
+    default:
+      return state;
+  }
+}
+
 
 export default function Timer() {
 
+  const {settings} = useContext(SettingsContext)
+
+  const initialState = {
+    // 'IDLE' | 'WORKING' | 'BREAK' | 'PAUSED'
+    status: 'IDLE',
+    previousStatus: '',
+    timeLeft: 0,
+    isActive:false,
+    currentSession:0,
+    totalSessions:0,
+    workDuration:settings.workDuration,
+    breakDuration:settings.breakDuration
+  }
+
   const [state, dispatch] = useReducer(timerReducer, initialState)
 
+  //定时器
   useEffect(() => {
     let timer; // 在顶层作用域声明
   
@@ -144,6 +166,18 @@ export default function Timer() {
 
     };
   }, [state.isActive]); 
+
+  //更新时长
+  useEffect(() => {
+    
+    dispatch({
+      type: ACTIONS.UPDATE_DURATIONS,
+      payload: {
+        workDuration: settings.workDuration,
+        breakDuration: settings.breakDuration
+      }
+    })
+  }, [settings.workDuration, settings.breakDuration])
 
   const renderButtons = () => {
     const buttons = getButtonStates(state.status, state.previousStatus)

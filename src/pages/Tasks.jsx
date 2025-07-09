@@ -22,15 +22,21 @@ const initialState = {
 function tasksReducer(state, action) {
   switch (action.type) {
     case ACTIONS.ADD_TASK:
-      return{
-        ...state,
-        tasks:[action.payload, ...state.tasks]
-      }
+      { 
+        const newTasks = [action.payload, ...state.tasks]
+        localStorage.setItem('tasks',JSON.stringify(newTasks))
+        return{
+          ...state,
+          tasks:newTasks
+        } }
     case ACTIONS.DELETE_TASK:
+    {  
+      const newTasks = state.tasks.filter(task => task.id !== action.payload)
+      localStorage.setItem('tasks',JSON.stringify(newTasks))
       return{
-        ...state,
-        tasks:state.tasks.filter(task => task.id !== action.payload)
-      }
+          ...state,
+          tasks:newTasks
+        }}
     case ACTIONS.EDIT_TASK:
       return{
         ...state,
@@ -69,9 +75,19 @@ function tasksReducer(state, action) {
   }
 }
 
+function initState(initialState) {
+  const savedTasks = localStorage.getItem('tasks')
+  return {
+    ...initialState,
+    tasks: savedTasks ? JSON.parse(savedTasks) : []
+  }
+}
+
 export default function Tasks() {
 
-  const [state, dispatch] = useReducer(tasksReducer, initialState)
+
+
+  const [state, dispatch] = useReducer(tasksReducer, initialState, initState)
   const filteredTasks = state.isSearching 
   ? state.tasks.filter(task => task.title.toLowerCase().includes(state.searchQuery.toLowerCase()))
   : state.tasks

@@ -6,20 +6,23 @@ import Dashboard from './pages/Dashboard'
 import Settings from './pages/Settings'
 import Timer from './pages/Timer'
 import Tasks from "./pages/Tasks";
+import { SettingsProvider } from "./contexts/SettingsContext";
 
 function App() {
 
   return (
     <>
-    <Routes>
-      <Route path='/' element={<Layout/>}>
-        <Route path='index' element={<Dashboard/>}></Route>
-        <Route path='settings' element={<Settings/>}></Route>
-        <Route path='tasks' element={<Tasks/>}></Route>
-        <Route path='timer' element={<Timer/>}></Route>
-        <Route path='*' element={<NotFoundPage/>}></Route>
-      </Route>
-    </Routes>
+    <SettingsProvider>
+      <Routes>
+        <Route path='/' element={<Layout/>}>
+          <Route path='index' element={<Dashboard/>}></Route>
+          <Route path='settings' element={<Settings/>}></Route>
+          <Route path='tasks' element={<Tasks/>}></Route>
+          <Route path='timer' element={<Timer/>}></Route>
+          <Route path='*' element={<NotFoundPage/>}></Route>
+        </Route>
+      </Routes>  
+    </SettingsProvider>
     </>
   )
 }
